@@ -1,0 +1,17 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+# 註:單元測試不需資料庫(retriever/llm 皆可注入)。
+# 整合測試(pgvector 實庫)之後可加 services: postgres(image: pgvector/pgvector:pg16)再開一個 job。

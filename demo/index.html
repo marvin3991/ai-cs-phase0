@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>○○印刷 — 智慧客服 Demo</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
+  body { background:#f5f6f8; min-height:100vh; }
+  header { background:#1F4E79; color:#fff; padding:18px 32px; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { font-size:20px; }
+  header nav { font-size:14px; opacity:.85; }
+  .hero { max-width:960px; margin:48px auto; padding:0 24px; }
+  .hero h2 { font-size:28px; color:#1F4E79; margin-bottom:12px; }
+  .hero p { color:#555; line-height:1.8; }
+  .cards { display:flex; gap:16px; margin-top:28px; flex-wrap:wrap; }
+  .card { background:#fff; border-radius:10px; padding:20px; flex:1; min-width:200px; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  .card h3 { font-size:16px; color:#1F4E79; margin-bottom:8px; }
+  .card p { font-size:13px; color:#666; line-height:1.7; }
+  .note { max-width:960px; margin:24px auto; padding:12px 24px; font-size:12px; color:#999; }
+
+  /* 聊天泡泡與視窗 */
+  #bubble { position:fixed; right:24px; bottom:24px; width:60px; height:60px; border-radius:50%;
+    background:#1F4E79; color:#fff; font-size:26px; border:none; cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.25); z-index:50; }
+  #panel { position:fixed; right:24px; bottom:96px; width:360px; max-width:calc(100vw - 48px);
+    height:520px; max-height:calc(100vh - 140px); background:#fff; border-radius:14px;
+    box-shadow:0 8px 30px rgba(0,0,0,.25); display:none; flex-direction:column; overflow:hidden; z-index:50; }
+  #panel.open { display:flex; }
+  .p-head { background:#1F4E79; color:#fff; padding:14px 16px; }
+  .p-head .t { font-size:15px; font-weight:bold; }
+  .p-head .s { font-size:11px; opacity:.8; margin-top:2px; }
+  #mode { font-size:10px; background:#FFF2CC; color:#7a5c00; padding:6px 10px; }
+  #msgs { flex:1; overflow-y:auto; padding:14px; background:#f7f8fa; }
+  .m { max-width:85%; margin-bottom:10px; padding:10px 12px; border-radius:12px; font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+  .m.user { background:#1F4E79; color:#fff; margin-left:auto; border-bottom-right-radius:4px; }
+  .m.bot  { background:#fff; color:#333; border:1px solid #e3e6ea; border-bottom-left-radius:4px; }
+  .m.handoff { background:#FFF7E6; border:1px solid #f0d490; color:#7a5c00; }
+  .m.refuse  { background:#f0f0f0; border:1px solid #ddd; color:#666; }
+  .src { margin-top:6px; }
+  .src span { display:inline-block; background:#E8F0F8; color:#1F4E79; font-size:10px;
+    padding:2px 7px; border-radius:8px; margin-right:4px; margin-top:2px; }
+  .tag { display:inline-block; font-size:10px; padding:1px 7px; border-radius:8px; margin-bottom:6px; }
+  .tag.h { background:#f0d490; color:#5c4500; }
+  .p-input { display:flex; border-top:1px solid #e3e6ea; }
+  .p-input input { flex:1; border:none; padding:13px 14px; font-size:13px; outline:none; }
+  .p-input button { border:none; background:#1F4E79; color:#fff; padding:0 20px; font-size:13px; cursor:pointer; }
+  .quick { padding:8px 12px; background:#f7f8fa; border-top:1px solid #eee; display:flex; flex-wrap:wrap; gap:6px; }
+  .quick button { font-size:11px; border:1px solid #c9d4e0; background:#fff; color:#1F4E79;
+    border-radius:12px; padding:4px 10px; cursor:pointer; }
+</style>
+</head>
+<body>
+<header>
+  <h1>○○印刷股份有限公司</h1>
+  <nav>產品 · 設備 · 認證 · 聯絡我們</nav>
+</header>
+<div class="hero">
+  <h2>包裝彩盒 / 商業印刷 / FSC 驗證廠</h2>
+  <p>這是 Demo 用的官網模擬頁。右下角的聊天泡泡,就是日後嵌入正式官網的智慧客服入口——同一顆大腦之後也接 LINE 官方帳號。</p>
+  <div class="cards">
+    <div class="card"><h3>印前檔案諮詢</h3><p>出血、解析度、色彩模式、字型轉外框——AI 依公司規範即時回答,並引導正確供檔。</p></div>
+    <div class="card"><h3>該擋的它會擋</h3><p>報價、折扣、交期承諾一律不回答數字,直接轉真人;誘導套話會被拒絕。試試問它「多少錢」。</p></div>
+    <div class="card"><h3>答案有憑有據</h3><p>每個回答附知識來源編號,對應知識盤點表,可稽核、可追溯。</p></div>
+  </div>
+</div>
+<p class="note">Demo 頁面僅供內部展示;正式上線時聊天視窗由 Chatwoot 提供(含真人接手後台),大腦層不變。</p>
+
+<button id="bubble" title="智慧客服">💬</button>
+<div id="panel">
+  <div class="p-head">
+    <div class="t">智慧客服(印前諮詢)</div>
+    <div class="s">AI 優先回覆.複雜問題轉真人</div>
+  </div>
+  <div id="mode">載入中…</div>
+  <div id="msgs"></div>
+  <div class="quick">
+    <button onclick="ask('出血要留多少?')">出血要留多少</button>
+    <button onclick="ask('檔案是 RGB 可以印嗎?')">RGB 可以印嗎</button>
+    <button onclick="ask('檔案要怎麼給你們?')">怎麼給檔案</button>
+    <button onclick="ask('幫我算5000個彩盒多少錢?')">問報價(看它擋)</button>
+  </div>
+  <div class="p-input">
+    <input id="inp" placeholder="輸入您的問題…" onkeydown="if(event.key==='Enter')send()">
+    <button onclick="send()">送出</button>
+  </div>
+</div>
+
+<script>
+const panel = document.getElementById('panel');
+const msgs = document.getElementById('msgs');
+const inp = document.getElementById('inp');
+let greeted = false;
+
+document.getElementById('bubble').onclick = async () => {
+  panel.classList.toggle('open');
+  if (!greeted) {
+    greeted = true;
+    bot('您好,我是印前諮詢客服。可以問我:出血、解析度、色彩模式、字型、檔案格式與供檔方式。');
+    try {
+      const r = await fetch('/api/info').then(r => r.json());
+      document.getElementById('mode').textContent =
+        r.llm_mode === 'stub'
+          ? '⚠ 目前為 stub 展示模式:回答內容是占位文字,但「攔報價/轉真人/附來源」為真實邏輯;接上 LLM API 後即為真實回答(知識 ' + r.knowledge_chunks + ' 塊)'
+          : 'LLM:' + r.llm_mode + '.知識 ' + r.knowledge_chunks + ' 塊';
+    } catch (e) { document.getElementById('mode').textContent = '無法取得系統狀態'; }
+  }
+};
+
+function add(cls, html) {
+  const d = document.createElement('div');
+  d.className = 'm ' + cls;
+  d.innerHTML = html;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function bot(text) { add('bot', esc(text)); }
+
+function ask(q) { inp.value = q; send(); }
+
+async function send() {
+  const q = inp.value.trim();
+  if (!q) return;
+  add('user', esc(q));
+  inp.value = '';
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: q})
+    }).then(r => r.json());
+    if (r.action === 'answer') {
+      let h = esc(r.text);
+      if (r.sources && r.sources.length)
+        h += '<div class="src">' + r.sources.map(s => '<span>' + esc(s) + '</span>').join('') + '</div>';
+      add('bot', h);
+    } else if (r.action === 'handoff') {
+      add('handoff', '<span class="tag h">已轉真人客服</span><br>' + esc(r.text) + '<br><span style="font-size:10px;opacity:.7">(攔截原因:' + esc(r.reason) + ';正式版由 Chatwoot 指派客服接手)</span>');
+    } else {
+      add('refuse', esc(r.text) + '<br><span style="font-size:10px;opacity:.7">(攔截原因:' + esc(r.reason) + ')</span>');
+    }
+  } catch (e) {
+    add('refuse', '連線異常,請稍後再試。');
+  }
+}
+</script>
+</body>
+</html>
