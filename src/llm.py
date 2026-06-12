@@ -13,10 +13,11 @@ from . import config  # noqa: F401
 def chat(messages: list[dict], mode: str | None = None) -> str:
     mode = mode or os.environ.get("LLM_MODE", "stub")
     if mode == "stub":
-        # 取最後一段 user 內容的「客戶問題」段,回固定格式;不做任何「理解」,品質評測必須切 api
+        # 取最後一段 user 內容的「客戶問題」段,回固定格式(含分層標記協定的 GROUNDED 標記,
+        # 讓本機 demo 流程可走通);不做任何「理解」,品質評測必須切 api
         user = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
         question = user.split("客戶問題:")[-1].strip()
-        return f"(stub 回覆)已依據提供的知識內容回答:{question[:40]}"
+        return f"GROUNDED\n(stub 回覆)已依據提供的知識內容回答:{question[:40]}"
     if mode == "api":
         base = os.environ["LLM_API_BASE"].rstrip("/")
         key = os.environ.get("LLM_API_KEY", "")
