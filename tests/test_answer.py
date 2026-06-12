@@ -105,3 +105,20 @@ def test_empty_hits_context_marked_no_knowledge():
 
     answer("你們週六有出貨嗎?", retriever=_retr_empty, llm=spy_llm)
     assert "無相關知識內容" in captured["user"]
+
+
+def test_inline_tag_same_line_tolerated():
+    r = answer("你好", retriever=_retr_empty, llm=lambda m: "CHITCHAT 您好!很高興為您服務。")
+    assert r["action"] == "answer" and r["reason"] == "chitchat"
+    assert "您好" in r["text"]
+
+
+def test_chitchat_empty_body_gets_default():
+    r = answer("你好", retriever=_retr_empty, llm=lambda m: "CHITCHAT")
+    assert r["action"] == "answer" and r["reason"] == "chitchat"
+    assert r["text"]  # 有預設問候
+
+
+def test_tag_with_colon_tolerated():
+    r = answer("什麼是上光?", retriever=_retr_empty, llm=lambda m: "GENERAL: 上光是在印刷品表面加工保護與增加質感的處理。")
+    assert r["action"] == "answer" and r["reason"] == "general_knowledge"
